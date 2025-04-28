@@ -1,0 +1,38 @@
+# Development and source files
+src/App.vue
+src/main.js
+.github
+.vscode
+public
+index.html
+
+# Other files not needed for the library
+index.ts
+example/
+
+# Config files
+.eslintrc
+.prettierrc
+.editorconfig
+tsconfig.json
+vite.config.js
+*.config.js
+*.config.cjs
+*.config.mjs
+
+# Other files
+node_modules
+*.log
+.DS_Store
+
+# Testing
+tests
+__tests__
+coverage
+*.spec.js
+*.test.js
+
+# Examples and docs
+examples
+docs
+demo 

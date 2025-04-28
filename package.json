@@ -1,0 +1,53 @@
+{
+  "name": "@calumk/vue-progress-status",
+  "version": "1.0.0",
+  "description": "A customizable status notification system for Vue 3 with a progress bar and hover functionality",
+  "author": "CalumK",
+  "license": "MIT",
+  "main": "dist/vue-progress-status.umd.js",
+  "module": "dist/vue-progress-status.es.js",
+  "types": "dist/types/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "import": "./dist/vue-progress-status.es.js",
+      "require": "./dist/vue-progress-status.umd.js"
+    },
+    "./dist/style.css": "./dist/style.css"
+  },
+  "scripts": {
+    "dev": "vite --port 3000",
+    "build": "vite build",
+    "preview": "vite preview",
+    "prepare": "bun run build"
+  },
+  "peerDependencies": {
+    "vue": "^3.2.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^4.2.3",
+    "vite": "^4.4.0",
+    "typescript": "^5.0.0",
+    "vue-tsc": "^1.8.0"
+  },
+  "keywords": [
+    "vue",
+    "vuejs",
+    "vue3",
+    "component",
+    "notification",
+    "toast",
+    "progress",
+    "status"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/calumk/vue-progress-status.git"
+  },
+  "bugs": {
+    "url": "https://github.com/calumk/vue-progress-status/issues"
+  },
+  "homepage": "https://github.com/calumk/vue-progress-status#readme"
+}
