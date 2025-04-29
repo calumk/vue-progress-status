@@ -5,7 +5,7 @@
         Notification from Service
       </button>
       <button @click="showUpdateExample" class="btn btn-info">
-        Updatable Message
+        Updatable Service Message
       </button>
     </div>
   </div>
@@ -26,11 +26,11 @@ function showServiceMessage() {
   })
 }
 
-// Example of using the updateMessage method
+// Example of using the updateMessage method with the service
 function showUpdateExample() {
   const messageId = progressStatusService.push({
-    title: 'Processing',
-    text: 'Step 1: Starting process...',
+    title: 'Service Processing',
+    text: 'Step 1: Starting process via service...',
     mode: 'info',
     timeout: 15000,
     cancellable: true
@@ -39,22 +39,22 @@ function showUpdateExample() {
   // Update the message after 2 seconds
   setTimeout(() => {
     progressStatusService.updateMessage(messageId, {
-      text: 'Step 2: Processing data...',
+      text: 'Step 2: Processing data via service...',
     })
   }, 2000)
   
   // Update the message after 4 seconds
   setTimeout(() => {
     progressStatusService.updateMessage(messageId, {
-      text: 'Step 3: Finalizing...',
+      text: 'Step 3: Finalizing via service...',
     })
   }, 4000)
   
   // Complete the process after 6 seconds
   setTimeout(() => {
     progressStatusService.updateMessage(messageId, {
-      title: 'Complete',
-      text: 'Process completed successfully!',
+      title: 'Service Complete',
+      text: 'Process completed successfully via service!',
       mode: 'success',
       timeout: 5000
     })
@@ -67,6 +67,13 @@ function showUpdateExample() {
   margin-top: 10px;
 }
 
+.button-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
 .btn {
   padding: 8px 16px;
   border: none;
@@ -75,7 +82,10 @@ function showUpdateExample() {
   color: white;
   font-weight: bold;
   transition: background-color 0.2s;
-  margin-right: 10px;
+}
+
+.btn:hover {
+  opacity: 0.9;
 }
 
 .btn-success {

@@ -8,6 +8,7 @@
         <button @click="showSuccess" class="btn btn-success">Show Success</button>
         <button @click="showWarning" class="btn btn-warning">Show Warning</button>
         <button @click="showError" class="btn btn-error">Show Error</button>
+        <button @click="showUpdateMessage" class="btn btn-info">Show Updating Message</button>
         <button @click="showLongMessage" class="btn btn-info">Show Long Message</button>
       </div>
 
@@ -101,14 +102,52 @@ function showLongMessage() {
   })
 }
 
+
+// Example of using the updateMessage method
+function showUpdateMessage() {
+  let messageId = statusRef.value.push({
+    title: 'Processing',
+    text: 'Step 1: Starting process...',
+    mode: 'info',
+    timeout: 15000,
+    cancellable: true
+  })
+  
+  // Update the message after 2 seconds
+  setTimeout(() => {
+    statusRef.value.updateMessage(messageId, {
+      text: 'Step 2: Processing data...',
+    })
+  }, 2000)
+  
+  // Update the message after 4 seconds
+  setTimeout(() => {
+    statusRef.value.updateMessage(messageId, {
+      text: 'Step 3: Finalizing...',
+    })
+  }, 4000)
+  
+  // Complete the process after 6 seconds
+  setTimeout(() => {
+    statusRef.value.updateMessage(messageId, {
+      title: 'Complete',
+      text: 'Process completed successfully!',
+      mode: 'success',
+      timeout: 5000
+    })
+  }, 6000)
+}
+
+
+
 // Show a welcome message
 onMounted(() => {
   setTimeout(() => {
     statusRef.value.push({
       title: 'Welcome',
-      text: 'Hover over messages to pause and see full text',
+      text: 'Welcome to the Demo!',
       mode: 'info',
-      timeout: 8000,
+      timeout: 3000,
       cancellable: true
     })
   }, 500)

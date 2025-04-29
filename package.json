@@ -2,7 +2,11 @@
   "name": "@calumk/vue-progress-status",
   "version": "0.3.5",
   "description": "A customizable status notification system for Vue 3 with a progress bar and hover functionality",
-  "author": "CalumK",
+  "author": {
+    "name": "Calum Knott",
+    "email": "calum@calumk.com",
+    "url": "http://calumk.com"
+  },
   "license": "MIT",
   "main": "dist/vue-progress-status.umd.js",
   "module": "dist/vue-progress-status.es.js",
@@ -21,13 +25,17 @@
     "dev": "vite --port 3000",
     "build": "vite build",
     "preview": "vite preview",
-    "prepare": "bun run build"
+    "prepare": "bun run build",
+    "build:demo": "vite build --mode github-pages",
+    "preview:demo": "vite preview --outDir dist-demo",
+    "deploy:demo": "npm run build:demo && gh-pages -d dist-demo"
   },
   "peerDependencies": {
     "vue": "^3.2.0"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^4.2.3",
+    "gh-pages": "^6.0.0",
     "vite": "^4.4.0",
     "typescript": "^5.0.0",
     "vue-tsc": "^1.8.0"
@@ -49,5 +57,9 @@
   "bugs": {
     "url": "https://github.com/calumk/vue-progress-status/issues"
   },
-  "homepage": "https://github.com/calumk/vue-progress-status#readme"
+  "homepage": "https://github.com/calumk/vue-progress-status#readme",
+  "funding": {
+    "type": "ko-fi",
+    "url": "https://ko-fi.com/calumk"
+  }
 }

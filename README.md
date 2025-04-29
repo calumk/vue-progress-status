@@ -1,16 +1,21 @@
-# Vue Progress Status
+# @calumk/vue-progress-status
 
-A customizable status notification system for Vue 3 with a progress bar, hover to pause functionality, and expandable message support.
+A customizable status notification system for Vue 3 with a progress bar and hover functionality.
+
+[View Demo](https://calumk.github.io/vue-progress-status/)
+
+[![npm version](https://img.shields.io/npm/v/@calumk/vue-progress-status.svg)](https://www.npmjs.com/package/@calumk/vue-progress-status)
+[![license](https://img.shields.io/npm/l/@calumk/vue-progress-status.svg)](https://github.com/calumk/vue-progress-status/blob/main/LICENSE)
 
 ## Features
 
-- 📊 Progress bar with smooth animations
-- ⏸️ Hover to pause progress and expand message
-- 🌈 Four status types: info, success, warning, error
-- 🔄 Customizable timeouts
-- ✖️ User-dismissible messages
-- 📝 Support for multiline messages with newlines
-- 📱 Fully responsive
+- Clean, minimal status notifications
+- Progress bar for auto-dismissing messages
+- Hover to pause/resume the timer
+- Expandable messages for longer content
+- Multiple message types (info, success, warning, error)
+- Comprehensive history tracking of all notifications and updates
+- Fully customizable via CSS variables
 
 ## Installation
 
@@ -20,25 +25,17 @@ npm install @calumk/vue-progress-status
 
 ## Usage
 
-### Importing
-
-There are two parts to import:
-
-```js
-// Import the component
-import ProgressStatus from '@calumk/vue-progress-status'
-
-// Import the styles (required)
-import '@calumk/vue-progress-status/dist/style.css'
-```
-
-### Vue 3 Script Setup
+### Basic Usage
 
 ```vue
+<template>
+  <ProgressStatus ref="statusRef" />
+  <button @click="showNotification">Show Notification</button>
+</template>
+
 <script setup>
 import { ref } from 'vue'
 import ProgressStatus from '@calumk/vue-progress-status'
-import '@calumk/vue-progress-status/dist/style.css' // Import the styles
 
 const statusRef = ref(null)
 
@@ -51,269 +48,101 @@ function showNotification() {
     cancellable: true  // Can be closed by user
   })
 }
-
-// Long messages with newlines
-function showLongMessage() {
-  statusRef.value.push({
-    title: 'Long Message Example',
-    text: 'This is a very long message that will expand when hovered.\nIt contains multiple lines of text to demonstrate the expansion feature.\nEach line will be visible when the message is expanded.',
-    mode: 'info',
-    timeout: 10000
-  })
-}
 </script>
+```
 
+### Using the Service
+
+You can also use the service to trigger notifications from anywhere in your application:
+
+```vue
 <template>
-  <div>
-    <button @click="showNotification">Show Notification</button>
-    <ProgressStatus ref="statusRef" />
-  </div>
+  <button @click="showServiceNotification">Show Notification</button>
 </template>
-```
 
-#### `updateMessage(id, options)`
-
-Updates an existing message.
-
-```vue
 <script setup>
-import { ref } from 'vue'
-import ProgressStatus from '@calumk/vue-progress-status'
-import '@calumk/vue-progress-status/dist/style.css'
+import { progressStatusService } from '@calumk/vue-progress-status'
 
-const statusRef = ref(null)
-let messageId = null
-
-function startProcess() {
-  // Store the ID when creating a message
-  messageId = statusRef.value.push({
-    title: 'Processing',
-    text: 'Your request is being processed',
+function showServiceNotification() {
+  progressStatusService.push({
+    title: 'Service Notification',
+    text: 'This notification was triggered using the service',
     mode: 'info',
-    timeout: 30000
+    timeout: 5000,
+    cancellable: true
   })
-
-  // Later, update the message
-  setTimeout(() => {
-    statusRef.value.updateMessage(messageId, {
-      title: 'Complete',
-      text: 'Your request was processed successfully',
-      mode: 'success',
-      timeout: 3000
-    })
-  }, 3000)
 }
 </script>
 ```
 
-#### `cancelMessage(id)`
-
-Manually dismiss a message.
+Don't forget to add the component somewhere in your app:
 
 ```vue
+<template>
+  <ProgressStatus />
+</template>
+
 <script setup>
-import { ref } from 'vue'
 import ProgressStatus from '@calumk/vue-progress-status'
-import '@calumk/vue-progress-status/dist/style.css'
-
-const statusRef = ref(null)
-let messageId = null
-
-function createMessage() {
-  messageId = statusRef.value.push({
-    title: 'Information',
-    text: 'This is an example message',
-    mode: 'info',
-    timeout: 0 // No timeout, will stay until cancelled
-  })
-}
-
-function cancelCurrentMessage() {
-  if (messageId !== null) {
-    statusRef.value.cancelMessage(messageId)
-    messageId = null
-  }
-}
 </script>
 ```
 
 ## API
 
-### Props
+### Component Props
 
-There are no props required for the component.
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| debug | Boolean | false | Enables debug logging to console |
+
+### Message Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| title | String | '' | Title of the notification |
+| text | String | '' | Message content |
+| mode | String | 'info' | Type of notification ('info', 'success', 'warning', 'error') |
+| timeout | Number | 10000 | Time in ms before auto-dismiss (0 for no timeout) |
+| cancellable | Boolean | true | Whether user can dismiss the notification |
 
 ### Methods
 
-#### `push(options)`
+| Method | Parameters | Return | Description |
+|--------|------------|--------|-------------|
+| push | options | messageId | Add a new notification |
+| updateMessage | (id, options) | void | Update an existing notification |
+| cancelMessage | id | void | Dismiss a notification |
 
-Adds a new status message to the display.
+## Development
 
-##### Options
+```bash
+# Install dependencies
+npm install
 
-- `title` (String): Title of the status message
-- `text` (String): Message content. Supports newlines with `\n`
-- `mode` (String): Status type - 'info', 'success', 'warning', 'error'
-- `timeout` (Number): Time in milliseconds before auto-dismiss. Set to 0 for no timeout
-- `cancellable` (Boolean): Whether the user can manually dismiss the message
+# Start development server
+npm run dev
 
-#### `updateMessage(id, options)`
+# Build the library
+npm run build
 
-Updates an existing message.
+# Build the GitHub Pages demo
+npm run build:demo
 
-## Features
+# Preview the demo locally
+npm run preview:demo
 
-- **Hover to Pause**: When hovering over a message, the progress bar pauses
-- **Expand on Hover**: Messages expand to show full content when hovered
-- **Multiline Support**: Use `\n` in your message text for line breaks
-- **Animation**: Smooth transitions for all interactions
-- **Responsive**: Works well on all screen sizes
-- **No Dependencies**: Lightweight with no external dependencies
-
-## Customizing
-
-The component uses CSS variables for easy customization. You can override these in your CSS:
-
-```css
-:root {
-  /* Colors for different status modes */
-  --progress-status-info-color: #1890ff;
-  --progress-status-success-color: #52c41a;
-  --progress-status-warning-color: #faad14;
-  --progress-status-error-color: #ff4d4f;
-  
-  /* Background and other styling */
-  --progress-status-background: #f5f5f5;
-}
+# Deploy to GitHub Pages
+npm run deploy:demo
 ```
 
-### Alternative: Importing CSS in specific components
+## Author
 
-If you prefer not to import the CSS globally, you can import it in your component:
-
-```vue
-<script setup>
-import { ref } from 'vue'
-import ProgressStatus from '@calumk/vue-progress-status'
-import '@calumk/vue-progress-status/dist/style.css' // Import CSS in component
-</script>
-```
-
-### Styling with Scoped CSS
-
-You can also target the component with scoped CSS:
-
-```vue
-<style scoped>
-/* Target specific parts of the component */
-:deep(.status-message) {
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-  border-radius: 4px;
-}
-</style>
-```
+**Calum Knott**
+- Website: [calumk.com](http://calumk.com)
+- GitHub: [@calumk](https://github.com/calumk)
+- Twitter: [@calumk](https://twitter.com/calumk)
+- Ko-fi: [Buy me a coffee](https://ko-fi.com/calumk)
 
 ## License
 
-MIT
-
-## Global Service
-
-You can use the `progressStatusService` to access ProgressStatus from anywhere in your application without passing refs.
-
-### Basic Setup
-
-1. Include ProgressStatus once in your App.vue:
-
-```vue
-<template>
-  <div id="app">
-    <!-- Your app content -->
-    
-    <!-- Include ProgressStatus component once -->
-    <ProgressStatus />
-  </div>
-</template>
-
-<script setup>
-import ProgressStatus from '@calumk/vue-progress-status'
-import '@calumk/vue-progress-status/dist/style.css'
-</script>
-```
-
-2. Import and use the service from any component:
-
-```vue
-<script setup>
-import { progressStatusService } from '@calumk/vue-progress-status'
-
-function showNotification() {
-  progressStatusService.push({
-    title: 'Success',
-    text: 'Operation completed successfully',
-    mode: 'success',
-    timeout: 5000
-  })
-}
-</script>
-```
-
-### Available Service Methods
-
-The service provides the same methods as the component:
-
-```js
-// Show a notification
-const id = progressStatusService.push({
-  title: 'Info',
-  text: 'This is an info message',
-  mode: 'info',
-  timeout: 5000
-})
-
-// Update an existing notification
-progressStatusService.updateMessage(id, {
-  title: 'Updated',
-  text: 'This message has been updated',
-  mode: 'success'
-})
-
-// Dismiss a notification
-progressStatusService.cancelMessage(id)
-```
-
-## Debugging
-
-### Component Debug Mode
-
-You can enable debug logging for the component by setting the `debug` prop:
-
-```vue
-<template>
-  <ProgressStatus :debug="true" />
-</template>
-```
-
-### Service Debug Mode
-
-When using the service approach, you can enable debug logging with the `setDebug` method:
-
-```js
-import { progressStatusService } from '@calumk/vue-progress-status'
-
-// Enable debug logging
-progressStatusService.setDebug(true)
-
-// Use the service as normal
-progressStatusService.push({
-  title: 'Debug Mode Active',
-  text: 'Check the console for detailed logs',
-  mode: 'info'
-})
-```
-
-Debug logs include details about:
-- Message creation and updates
-- Progress calculations
-- Pause/resume actions
-- Component lifecycle events
+MIT License

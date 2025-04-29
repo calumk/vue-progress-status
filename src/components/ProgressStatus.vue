@@ -1,7 +1,18 @@
 <template>
   <div>
+    <!-- History button (always visible) -->
+    <button class="ps-history-button" @click="toggleHistoryModal" title="View notification history">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 8v4l3 3"></path>
+        <circle cx="12" cy="12" r="10"></circle>
+      </svg>
+    </button>
+    
     <!-- Background bar -->
     <div class="ps-progress-status-container" :class="{ 'ps-is-visible': hasVisibleMessages }">
+      <div class="ps-status-counter" v-if="visibleMessages.length > 0">
+        {{ visibleMessages.length }}
+      </div>
       <div class="ps-status-messages-wrapper">
         <div class="ps-status-messages-placeholder"></div>
       </div>
@@ -41,6 +52,48 @@
         </div>
       </div>
     </div>
+
+    <!-- History Modal -->
+    <div v-if="isHistoryModalOpen" class="ps-history-modal-overlay" @click="closeHistoryModal">
+      <div class="ps-history-modal" @click.stop>
+        <div class="ps-history-modal-header">
+          <h3>Notification History</h3>
+          <button class="ps-history-modal-close" @click="closeHistoryModal">×</button>
+        </div>
+        <div class="ps-history-modal-content">
+          <div v-if="messageHistory.length === 0" class="ps-history-empty">
+            No notifications yet
+          </div>
+          <div v-else class="ps-history-list">
+            <div v-for="entry in messageHistory" :key="entry.id" class="ps-history-entry">
+              <!-- Original notification -->
+              <div class="ps-history-message" :class="`ps-${entry.original.mode}`">
+                <div class="ps-history-message-content">
+                  <div class="ps-history-message-header">
+                    <span class="ps-history-message-title">{{ entry.original.title }}</span>
+                    <span class="ps-history-message-time">{{ formatTime(entry.original.timestamp) }}</span>
+                  </div>
+                  <div class="ps-history-message-text">{{ entry.original.text }}</div>
+                </div>
+              </div>
+              
+              <!-- Updates for this notification -->
+              <div v-for="(update, index) in entry.updates" :key="`${entry.id}-${index}`" class="ps-history-update">
+                <div class="ps-history-message" :class="`ps-${update.mode}`">
+                  <div class="ps-history-message-content">
+                    <div class="ps-history-message-header">
+                      <span class="ps-history-message-title">{{ update.title }}</span>
+                      <span class="ps-history-message-time">{{ formatTime(update.timestamp) }}</span>
+                    </div>
+                    <div class="ps-history-message-text">{{ update.text }}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -66,6 +119,8 @@ const log = (message, data) => {
 const messages = ref([])
 const messageId = ref(0)
 const hoveredMessageId = ref(null)
+const messageHistory = ref([])
+const isHistoryModalOpen = ref(false)
 
 // Register this component instance with the service on mount
 onMounted(() => {
@@ -155,6 +210,19 @@ function push(options) {
   }
 
   messages.value = [...messages.value, message]
+
+  // Add to history with timestamp
+  const historyEntry = {
+    id,
+    original: {
+      title: message.title,
+      text: message.text,
+      mode: message.mode,
+      timestamp: Date.now()
+    },
+    updates: []
+  }
+  messageHistory.value = [historyEntry, ...messageHistory.value]
 
   if (message.timeout > 0) {
     startProgressUpdate(message)
@@ -353,6 +421,25 @@ function updateMessage(id, options) {
       updatedMessage,
       ...messages.value.slice(index + 1)
     ]
+
+    // Add to message history
+    const historyIndex = messageHistory.value.findIndex(entry => entry.id === id)
+    if (historyIndex !== -1) {
+      const updateEntry = {
+        title: updatedMessage.title,
+        text: updatedMessage.text,
+        mode: updatedMessage.mode,
+        timestamp: Date.now()
+      }
+      messageHistory.value = [
+        ...messageHistory.value.slice(0, historyIndex),
+        {
+          ...messageHistory.value[historyIndex],
+          updates: [...messageHistory.value[historyIndex].updates, updateEntry]
+        },
+        ...messageHistory.value.slice(historyIndex + 1)
+      ]
+    }
   }
 }
 
@@ -379,6 +466,22 @@ function cancelMessage(id) {
       }, 300)
     }
   }
+}
+
+function toggleHistoryModal() {
+  isHistoryModalOpen.value = !isHistoryModalOpen.value
+}
+
+function closeHistoryModal() {
+  isHistoryModalOpen.value = false
+}
+
+function formatTime(timestamp) {
+  const date = new Date(timestamp)
+  const hours = date.getHours().toString().padStart(2, '0')
+  const minutes = date.getMinutes().toString().padStart(2, '0')
+  const seconds = date.getSeconds().toString().padStart(2, '0')
+  return `${hours}:${minutes}:${seconds}`
 }
 
 // Export methods for the component
@@ -418,6 +521,7 @@ defineExpose({
 .ps-status-messages-placeholder {
   height: 100%;
   padding: 0 8px;
+  padding-left: 88px;
 }
 
 .ps-status-messages-floating {
@@ -441,10 +545,10 @@ defineExpose({
   display: flex;
   align-items: flex-end;
   padding: 0 8px;
+  padding-left: 88px;
   gap: 8px;
   overflow-x: auto;
   position: relative;
-  /* small shadow */
 }
 
 .ps-status-message-wrapper {
@@ -473,11 +577,9 @@ defineExpose({
 
 .ps-status-message.ps-is-expanded {
   min-height: auto;
-  /* Remove transform-origin and animation that causes font stretching */
-  /* box-shadow all sides with more emphasis on top */
   box-shadow: 0 0 3px rgba(0, 0, 0, 0.3);
-  margin-top: 3px; /* Add margin to make top shadow visible */
-  transform: translateY(-2px); /* Move up slightly instead of scaling */
+  margin-top: 3px;
+  transform: translateY(-2px);
   transition: transform 0.2s ease, box-shadow 0.2s ease, margin-top 0.2s ease;
 }
 
@@ -592,5 +694,221 @@ defineExpose({
 
 .ps-warning {
   color: var(--progress-status-warning-color, #faad14);
+}
+
+.ps-status-counter {
+  position: absolute;
+  left: 40px; /* Moved to the right to make room for history button */
+  bottom: 10px;
+  background: rgba(0, 0, 0, 0.35);
+  color: #fff;
+  font-size: 13px;
+  min-width: 24px;
+  height: 22px;
+  border-radius: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 7px;
+  font-weight: bold;
+  z-index: 1002;
+  letter-spacing: -0.2px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.ps-history-button {
+  position: fixed;
+  left: 10px;
+  bottom: 10px;
+  background: rgba(0, 0, 0, 0.35);
+  color: #fff;
+  border: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 1003;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease;
+  pointer-events: auto;
+}
+
+.ps-history-button:hover {
+  background: rgba(0, 0, 0, 0.5);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25);
+}
+
+.ps-history-button:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.ps-history-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1010;
+  animation: ps-fadeIn 0.2s ease forwards;
+}
+
+@keyframes ps-fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.ps-history-modal {
+  background: white;
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  width: 500px;
+  max-width: 90vw;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  animation: ps-slideUp 0.2s ease forwards;
+}
+
+@keyframes ps-slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.ps-history-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 16px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.ps-history-modal-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #222;
+}
+
+.ps-history-modal-close {
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  opacity: 0.5;
+  color: #000;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.ps-history-modal-close:hover {
+  opacity: 0.8;
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.ps-history-modal-content {
+  padding: 16px;
+  overflow-y: auto;
+  max-height: calc(80vh - 48px);
+}
+
+.ps-history-empty {
+  text-align: center;
+  padding: 20px;
+  color: #999;
+  font-style: italic;
+}
+
+.ps-history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ps-history-entry {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-bottom: 1px solid #f0f0f0;
+  padding-bottom: 16px;
+}
+
+.ps-history-entry:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.ps-history-message {
+  background: white;
+  border-radius: 3px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  width: 100%;
+}
+
+.ps-history-update {
+  margin-left: 20px;
+  position: relative;
+}
+
+.ps-history-update::before {
+  content: '';
+  position: absolute;
+  left: -10px;
+  top: 50%;
+  width: 10px;
+  height: 1px;
+  background: #ddd;
+}
+
+.ps-history-message-content {
+  padding: 8px 12px;
+}
+
+.ps-history-message-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.ps-history-message-title {
+  font-weight: bold;
+  font-size: 13px;
+}
+
+.ps-history-message-time {
+  font-size: 11px;
+  color: #999;
+}
+
+.ps-history-message-text {
+  font-size: 12px;
+  line-height: 1.4;
+  white-space: normal;
+  overflow: visible;
 }
 </style> 
