@@ -13,11 +13,19 @@ export default defineConfig(({ mode }) => {
     plugins: [
       vue(),
       {
-        name: 'create-root-index',
+        name: 'copy-index-html',
         closeBundle: () => {
           if (isGitHubPages) {
-            // Create a redirect index.html in the root
-            const redirectHtml = `<!DOCTYPE html>
+            try {
+              // Check if the public/index.html file exists
+              if (fs.existsSync('example/public/index.html')) {
+                // Copy the public/index.html to dist-demo/index.html
+                const indexHtml = fs.readFileSync('example/public/index.html', 'utf8');
+                fs.writeFileSync('dist-demo/index.html', indexHtml);
+                console.log('Successfully copied index.html to dist-demo root');
+              } else {
+                // Create a simple redirect index.html
+                const redirectHtml = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -29,7 +37,12 @@ export default defineConfig(({ mode }) => {
   <p>If you are not redirected automatically, <a href="example/index.html">click here</a>.</p>
 </body>
 </html>`;
-            fs.writeFileSync('dist-demo/index.html', redirectHtml);
+                fs.writeFileSync('dist-demo/index.html', redirectHtml);
+                console.log('Created simple redirect index.html in dist-demo root');
+              }
+            } catch (error) {
+              console.error('Error during index.html creation:', error);
+            }
           }
         }
       }
