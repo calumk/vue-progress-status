@@ -1,43 +1,43 @@
 <template>
   <div>
     <!-- Background bar -->
-    <div class="progress-status-container" :class="{ 'is-visible': hasVisibleMessages }">
-      <div class="status-messages-wrapper">
-        <div class="status-messages-placeholder"></div>
+    <div class="ps-progress-status-container" :class="{ 'ps-is-visible': hasVisibleMessages }">
+      <div class="ps-status-messages-wrapper">
+        <div class="ps-status-messages-placeholder"></div>
       </div>
     </div>
 
     <!-- Floating messages -->
-    <div class="status-messages-floating" :class="{ 'is-visible': hasVisibleMessages }">
-      <div class="status-messages">
+    <div class="ps-status-messages-floating" :class="{ 'ps-is-visible': hasVisibleMessages }">
+      <div class="ps-status-messages">
         <div
           v-for="message in allMessages"
           :key="message.id"
-          class="status-message-wrapper"
-          :class="{ 'is-hidden': message.cancelled && !isMessageToRightOfHovered(message) }"
+          class="ps-status-message-wrapper"
+          :class="{ 'ps-is-hidden': message.cancelled && !isMessageToRightOfHovered(message) }"
         >
           <div
             v-if="!message.cancelled"
-            class="status-message"
-            :class="[message.mode, { 'is-expanded': message.isExpanded }]"
+            class="ps-status-message"
+            :class="[`ps-${message.mode}`, { 'ps-is-expanded': message.isExpanded }]"
             @mouseenter="handleMouseEnter(message.id)"
             @mouseleave="handleMouseLeave(message.id)"
           >
-            <div class="status-content">
-              <div class="status-header">
-                <span class="status-title">{{ message.title }}</span>
-                <button v-if="message.cancellable" class="status-close" @click="cancelMessage(message.id)">×</button>
+            <div class="ps-status-content">
+              <div class="ps-status-header">
+                <span class="ps-status-title">{{ message.title }}</span>
+                <button v-if="message.cancellable" class="ps-status-close" @click="cancelMessage(message.id)">×</button>
               </div>
-              <div class="status-text">{{ message.text }}</div>
+              <div class="ps-status-text">{{ message.text }}</div>
             </div>
-            <div class="status-progress" v-if="message.timeout > 0">
+            <div class="ps-status-progress" v-if="message.timeout > 0">
               <div 
-                class="status-progress-bar" 
+                class="ps-status-progress-bar" 
                 :style="{ width: `${message.progress}%` }"
               ></div>
             </div>
           </div>
-          <div v-if="message.isExpanded" class="status-message-placeholder"></div>
+          <div v-if="message.isExpanded" class="ps-status-message-placeholder"></div>
         </div>
       </div>
     </div>
@@ -390,7 +390,7 @@ defineExpose({
 </script>
 
 <style>
-.progress-status-container {
+.ps-progress-status-container {
   position: fixed;
   bottom: 0;
   left: 0;
@@ -406,21 +406,21 @@ defineExpose({
   -moz-osx-font-smoothing: grayscale;
 }
 
-.progress-status-container.is-visible {
+.ps-progress-status-container.ps-is-visible {
   transform: translateY(0);
 }
 
-.status-messages-wrapper {
+.ps-status-messages-wrapper {
   position: relative;
   height: 100%;
 }
 
-.status-messages-placeholder {
+.ps-status-messages-placeholder {
   height: 100%;
   padding: 0 8px;
 }
 
-.status-messages-floating {
+.ps-status-messages-floating {
   position: fixed;
   bottom: 4px;
   left: 0;
@@ -433,11 +433,11 @@ defineExpose({
   -moz-osx-font-smoothing: grayscale;
 }
 
-.status-messages-floating.is-visible {
+.ps-status-messages-floating.ps-is-visible {
   transform: translateY(0);
 }
 
-.status-messages {
+.ps-status-messages {
   display: flex;
   align-items: flex-end;
   padding: 0 8px;
@@ -447,18 +447,18 @@ defineExpose({
   /* small shadow */
 }
 
-.status-message-wrapper {
+.ps-status-message-wrapper {
   width: 200px;
   flex-shrink: 0;
   position: relative;
   margin-top:5px;
 }
 
-.status-message-wrapper.is-hidden {
+.ps-status-message-wrapper.ps-is-hidden {
   visibility: hidden;
 }
 
-.status-message {
+.ps-status-message {
   position: relative;
   width: 100%;
   min-height: 28px;
@@ -471,7 +471,7 @@ defineExpose({
   font-family: inherit;
 }
 
-.status-message.is-expanded {
+.ps-status-message.ps-is-expanded {
   min-height: auto;
   /* Remove transform-origin and animation that causes font stretching */
   /* box-shadow all sides with more emphasis on top */
@@ -481,32 +481,32 @@ defineExpose({
   transition: transform 0.2s ease, box-shadow 0.2s ease, margin-top 0.2s ease;
 }
 
-.status-message-placeholder {
+.ps-status-message-placeholder {
   height: 0;
   width: 100%;
   flex-shrink: 0;
 }
 
-.status-content {
+.ps-status-content {
   padding: 2px 8px;
   min-height: calc(100% - 3px);
 }
 
-.status-header {
+.ps-status-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1px;
 }
 
-.status-title {
+.ps-status-title {
   font-weight: bold;
   font-size: 12px;
   letter-spacing: -0.2px;
   font-family: inherit;
 }
 
-.status-text {
+.ps-status-text {
   font-size: 11px;
   white-space: nowrap;
   overflow: hidden;
@@ -517,14 +517,14 @@ defineExpose({
   transition: all 0.2s ease;
 }
 
-.status-message.is-expanded .status-text {
+.ps-status-message.ps-is-expanded .ps-status-text {
   white-space: normal;
   overflow: visible;
-  animation: fadeInText 0.2s ease forwards;
+  animation: ps-fadeInText 0.2s ease forwards;
   padding-bottom: 4px;
 }
 
-@keyframes fadeInText {
+@keyframes ps-fadeInText {
   from {
     opacity: 0;
     transform: translateY(-5px);
@@ -535,7 +535,7 @@ defineExpose({
   }
 }
 
-.status-close {
+.ps-status-close {
   background: none;
   border: none;
   padding: 0;
@@ -546,11 +546,11 @@ defineExpose({
   color: #000;
 }
 
-.status-close:hover {
+.ps-status-close:hover {
   opacity: 1;
 }
 
-.status-progress {
+.ps-status-progress {
   position: absolute;
   bottom: 0;
   left: 0;
@@ -559,38 +559,38 @@ defineExpose({
   background: rgba(0, 0, 0, 0.1);
 }
 
-.status-progress-bar {
+.ps-status-progress-bar {
   height: 100%;
   background: currentColor;
   transition: width 0.05s linear;
   will-change: width;
 }
 
-.status-enter-active,
-.status-leave-active {
+.ps-status-enter-active,
+.ps-status-leave-active {
   transition: all 0.3s ease;
 }
 
-.status-enter-from,
-.status-leave-to {
+.ps-status-enter-from,
+.ps-status-leave-to {
   opacity: 0;
   transform: translateX(30px);
 }
 
 /* Mode styles */
-.info {
+.ps-info {
   color: var(--progress-status-info-color, #1890ff);
 }
 
-.success {
+.ps-success {
   color: var(--progress-status-success-color, #52c41a);
 }
 
-.error {
+.ps-error {
   color: var(--progress-status-error-color, #ff4d4f);
 }
 
-.warning {
+.ps-warning {
   color: var(--progress-status-warning-color, #faad14);
 }
 </style> 
