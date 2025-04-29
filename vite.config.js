@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { resolve } from 'path'
+import fs from 'fs'
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
@@ -9,7 +10,30 @@ export default defineConfig(({ mode }) => {
 
   // Base config shared between both builds
   const baseConfig = {
-    plugins: [vue()],
+    plugins: [
+      vue(),
+      {
+        name: 'create-root-index',
+        closeBundle: () => {
+          if (isGitHubPages) {
+            // Create a redirect index.html in the root
+            const redirectHtml = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>@calumk/vue-progress-status - Redirecting...</title>
+  <meta http-equiv="refresh" content="0;URL='example/index.html'" />
+</head>
+<body>
+  <p>If you are not redirected automatically, <a href="example/index.html">click here</a>.</p>
+</body>
+</html>`;
+            fs.writeFileSync('dist-demo/index.html', redirectHtml);
+          }
+        }
+      }
+    ],
   }
 
   // Settings for GitHub Pages demo build
