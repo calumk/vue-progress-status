@@ -1,11 +1,12 @@
 # @calumk/vue-progress-status
 
+[![npm version](https://img.shields.io/npm/v/@calumk/vue-progress-status.svg)](https://www.npmjs.com/package/@calumk/vue-progress-status)
+[![GitHub](https://img.shields.io/github/stars/calumk/vue-progress-status?style=social)](https://github.com/calumk/vue-progress-status)
+[![license](https://img.shields.io/npm/l/@calumk/vue-progress-status.svg)](https://github.com/calumk/vue-progress-status/blob/main/LICENSE)
+
 A customizable status notification system for Vue 3 with a progress bar and hover functionality.
 
 [View Demo](https://calumk.github.io/vue-progress-status/)
-
-[![npm version](https://img.shields.io/npm/v/@calumk/vue-progress-status.svg)](https://www.npmjs.com/package/@calumk/vue-progress-status)
-[![license](https://img.shields.io/npm/l/@calumk/vue-progress-status.svg)](https://github.com/calumk/vue-progress-status/blob/main/LICENSE)
 
 ## Features
 
@@ -20,7 +21,17 @@ A customizable status notification system for Vue 3 with a progress bar and hove
 ## Installation
 
 ```bash
+# npm
 npm install @calumk/vue-progress-status
+
+# yarn
+yarn add @calumk/vue-progress-status
+
+# pnpm
+pnpm add @calumk/vue-progress-status
+
+# bun
+bun install @calumk/vue-progress-status
 ```
 
 ## Usage
@@ -135,14 +146,14 @@ npm run preview:demo
 npm run deploy:demo
 ```
 
-## Author
+## License
+
+MIT License
+
+---
 
 **Calum Knott**
 - Website: [calumk.com](http://calumk.com)
 - GitHub: [@calumk](https://github.com/calumk)
 - Twitter: [@calumk](https://twitter.com/calumk)
 - Ko-fi: [Buy me a coffee](https://ko-fi.com/calumk)
-
-## License
-
-MIT License
