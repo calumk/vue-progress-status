@@ -10,11 +10,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      
+      # Setup Node.js for npm authentication
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          registry-url: 'https://registry.npmjs.org'
+      
+      # Setup Bun for building
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: "latest"
+          
       - run: bun install
       - run: bun run build
-      - run: bun run npm publish --access public
+      
+      # Publish using npm with Node.js auth
+      - run: npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
