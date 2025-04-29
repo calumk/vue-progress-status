@@ -9,6 +9,9 @@
         <button @click="showWarning" class="btn btn-warning">Show Warning</button>
         <button @click="showError" class="btn btn-error">Show Error</button>
         <button @click="showLongMessage" class="btn btn-info">Show Long Message</button>
+        <button @click="toggleDebug" class="btn" :class="{ 'btn-debug-on': debugEnabled, 'btn-debug-off': !debugEnabled }">
+          {{ debugEnabled ? 'Debug: ON' : 'Debug: OFF' }}
+        </button>
       </div>
       
       <div class="example-section">
@@ -18,15 +21,33 @@
       </div>
     </div>
     
-    <ProgressStatus />
+    <ProgressStatus :debug="debugEnabled" />
   </div>
 </template>
 
 <script setup>
-import { onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import ProgressStatus from '../src/components/ProgressStatus.vue'
 import { progressStatusService } from '../src/progressStatusService'
 import ServiceExample from './ServiceExample.vue'
+
+// Debug mode toggle
+const debugEnabled = ref(false)
+
+function toggleDebug() {
+  debugEnabled.value = !debugEnabled.value
+  progressStatusService.setDebug(debugEnabled.value)
+  
+  // Show a notification about the debug mode
+  progressStatusService.push({
+    title: debugEnabled.value ? 'Debug Mode Enabled' : 'Debug Mode Disabled',
+    text: debugEnabled.value 
+      ? 'Check the browser console to see detailed logs'
+      : 'Console logging has been disabled',
+    mode: 'info',
+    timeout: 5000
+  })
+}
 
 function showInfo() {
   progressStatusService.push({
@@ -160,5 +181,14 @@ h2 {
 
 .btn-error {
   background-color: #ff4d4f;
+}
+
+.btn-debug-on {
+  background-color: #722ed1;
+}
+
+.btn-debug-off {
+  background-color: #d3adf7;
+  color: #333;
 }
 </style> 

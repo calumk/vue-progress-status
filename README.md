@@ -99,7 +99,7 @@ function startProcess() {
       title: 'Complete',
       text: 'Your request was processed successfully',
       mode: 'success',
-      timeout: 5000
+      timeout: 3000
     })
   }, 3000)
 }
@@ -281,3 +281,39 @@ progressStatusService.updateMessage(id, {
 // Dismiss a notification
 progressStatusService.cancelMessage(id)
 ```
+
+## Debugging
+
+### Component Debug Mode
+
+You can enable debug logging for the component by setting the `debug` prop:
+
+```vue
+<template>
+  <ProgressStatus :debug="true" />
+</template>
+```
+
+### Service Debug Mode
+
+When using the service approach, you can enable debug logging with the `setDebug` method:
+
+```js
+import { progressStatusService } from '@calumk/vue-progress-status'
+
+// Enable debug logging
+progressStatusService.setDebug(true)
+
+// Use the service as normal
+progressStatusService.push({
+  title: 'Debug Mode Active',
+  text: 'Check the console for detailed logs',
+  mode: 'info'
+})
+```
+
+Debug logs include details about:
+- Message creation and updates
+- Progress calculations
+- Pause/resume actions
+- Component lifecycle events

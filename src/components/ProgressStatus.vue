@@ -48,12 +48,28 @@
 import { ref, computed, onMounted, getCurrentInstance } from 'vue'
 import { progressStatusService } from '../progressStatusService'
 
+// Props
+const props = defineProps({
+  debug: {
+    type: Boolean,
+    default: false
+  }
+})
+
+// Debug logger function
+const log = (message, data) => {
+  if (props.debug) {
+    console.log(`[ProgressStatus] ${message}`, data || '')
+  }
+}
+
 const messages = ref([])
 const messageId = ref(0)
 const hoveredMessageId = ref(null)
 
 // Register this component instance with the service on mount
 onMounted(() => {
+  log('Component mounted')
   progressStatusService.setInstance(getCurrentInstance().exposed)
 })
 
@@ -176,15 +192,15 @@ function collapseMessage(id) {
 }
 
 function startProgressUpdate(message) {
-  console.log('Starting progress update for message:', message.id)
+  log('Starting progress update for message:', message.id)
   if (message.interval) {
-    console.log('Clearing existing interval:', message.interval)
+    log('Clearing existing interval:', message.interval)
     clearInterval(message.interval)
   }
 
   message.interval = setInterval(() => {
     if (message.cancelled || message.isPaused) {
-      console.log('Stopping update - cancelled or paused:', { 
+      log('Stopping update - cancelled or paused:', { 
         id: message.id, 
         cancelled: message.cancelled, 
         isPaused: message.isPaused 
@@ -197,7 +213,7 @@ function startProgressUpdate(message) {
     const elapsed = Date.now() - message.startTime
     const progress = Math.max(0, 100 - (elapsed / message.timeout * 100))
     
-    console.log('Progress update:', {
+    log('Progress update:', {
       id: message.id,
       elapsed,
       progress,
@@ -215,7 +231,7 @@ function startProgressUpdate(message) {
     }
     
     if (progress <= 0) {
-      console.log('Progress reached zero for message:', message.id)
+      log('Progress reached zero for message:', message.id)
       clearInterval(message.interval)
       message.interval = null
 
@@ -223,7 +239,7 @@ function startProgressUpdate(message) {
       
       if (isToLeftOfHovered) {
         // Just mark as cancelled, don't schedule removal
-        console.log('Message to left of hovered, marking cancelled directly:', message.id)
+        log('Message to left of hovered, marking cancelled directly:', message.id)
         const index = messages.value.findIndex(msg => msg.id === message.id)
         if (index !== -1) {
           messages.value = [
@@ -234,21 +250,21 @@ function startProgressUpdate(message) {
         }
       } else {
         // Not protected by hover, proceed with normal cancellation/removal
-        console.log('Message not to left of hovered, calling cancelMessage:', message.id)
+        log('Message not to left of hovered, calling cancelMessage:', message.id)
         cancelMessage(message.id)
       }
     }
   }, 32) // ~30fps for smoother updates
 
-  console.log('Started new interval:', message.interval)
+  log('Started new interval:', message.interval)
 }
 
 function pauseMessage(id) {
-  console.log('Attempting to pause message:', id)
+  log('Attempting to pause message:', id)
   const message = messages.value.find(msg => msg.id === id)
-  console.log('Found message to pause:', message)
+  log('Found message to pause:', message)
   if (message && !message.isPaused && message.timeout > 0) {
-    console.log('Pausing message:', {
+    log('Pausing message:', {
       id: message.id,
       currentInterval: message.interval,
       isPaused: message.isPaused
@@ -256,7 +272,7 @@ function pauseMessage(id) {
     
     // Cancel the interval
     if (message.interval) {
-      console.log('Clearing interval:', message.interval)
+      log('Clearing interval:', message.interval)
       clearInterval(message.interval)
       message.interval = null
     }
@@ -268,17 +284,17 @@ function pauseMessage(id) {
         { ...message, isPaused: true, pauseTime: Date.now() },
         ...messages.value.slice(index + 1)
       ]
-      console.log('Message paused successfully:', messages.value[index])
+      log('Message paused successfully:', messages.value[index])
     }
   }
 }
 
 function resumeMessage(id) {
-  console.log('Attempting to resume message:', id)
+  log('Attempting to resume message:', id)
   const message = messages.value.find(msg => msg.id === id)
-  console.log('Found message to resume:', message)
+  log('Found message to resume:', message)
   if (message && message.isPaused && message.timeout > 0) {
-    console.log('Resuming message:', {
+    log('Resuming message:', {
       id: message.id,
       currentInterval: message.interval,
       isPaused: message.isPaused
@@ -302,7 +318,7 @@ function resumeMessage(id) {
       
       // Restart the progress update
       startProgressUpdate(updatedMessage)
-      console.log('Message resumed successfully:', messages.value[index])
+      log('Message resumed successfully:', messages.value[index])
     }
   }
 }
