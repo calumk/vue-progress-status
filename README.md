@@ -20,54 +20,105 @@ npm install @calumk/vue-progress-status
 
 ## Usage
 
-### Vue 3 Composition API
+### Vue 3 Script Setup
 
-```javascript
+```vue
+<script setup>
+import { ref } from 'vue'
+import ProgressStatus from '@calumk/vue-progress-status'
+
+const statusRef = ref(null)
+
+function showNotification() {
+  statusRef.value.push({
+    title: 'Operation Complete',
+    text: 'Your task was completed successfully',
+    mode: 'success',   // 'info', 'success', 'warning', 'error'
+    timeout: 5000,     // Time in ms before auto-dismiss
+    cancellable: true  // Can be closed by user
+  })
+}
+
+// Long messages with newlines
+function showLongMessage() {
+  statusRef.value.push({
+    title: 'Long Message Example',
+    text: 'This is a very long message that will expand when hovered.\nIt contains multiple lines of text to demonstrate the expansion feature.\nEach line will be visible when the message is expanded.',
+    mode: 'info',
+    timeout: 10000
+  })
+}
+</script>
+
 <template>
   <div>
     <button @click="showNotification">Show Notification</button>
     <ProgressStatus ref="statusRef" />
   </div>
 </template>
+```
 
-<script>
-import { defineComponent, ref } from 'vue'
+#### `updateMessage(id, options)`
+
+Updates an existing message.
+
+```vue
+<script setup>
+import { ref } from 'vue'
 import ProgressStatus from '@calumk/vue-progress-status'
 
-export default defineComponent({
-  components: {
-    ProgressStatus
-  },
-  setup() {
-    const statusRef = ref(null)
+const statusRef = ref(null)
+let messageId = null
 
-    function showNotification() {
-      statusRef.value.push({
-        title: 'Operation Complete',
-        text: 'Your task was completed successfully',
-        mode: 'success',   // 'info', 'success', 'warning', 'error'
-        timeout: 5000,     // Time in ms before auto-dismiss
-        cancellable: true  // Can be closed by user
-      })
-    }
+function startProcess() {
+  // Store the ID when creating a message
+  messageId = statusRef.value.push({
+    title: 'Processing',
+    text: 'Your request is being processed',
+    mode: 'info',
+    timeout: 30000
+  })
 
-    // Long messages with newlines
-    function showLongMessage() {
-      statusRef.value.push({
-        title: 'Long Message Example',
-        text: 'This is a very long message that will expand when hovered.\nIt contains multiple lines of text to demonstrate the expansion feature.\nEach line will be visible when the message is expanded.',
-        mode: 'info',
-        timeout: 10000
-      })
-    }
+  // Later, update the message
+  setTimeout(() => {
+    statusRef.value.updateMessage(messageId, {
+      title: 'Complete',
+      text: 'Your request was processed successfully',
+      mode: 'success',
+      timeout: 5000
+    })
+  }, 3000)
+}
+</script>
+```
 
-    return {
-      statusRef,
-      showNotification,
-      showLongMessage
-    }
+#### `cancelMessage(id)`
+
+Manually dismiss a message.
+
+```vue
+<script setup>
+import { ref } from 'vue'
+import ProgressStatus from '@calumk/vue-progress-status'
+
+const statusRef = ref(null)
+let messageId = null
+
+function createMessage() {
+  messageId = statusRef.value.push({
+    title: 'Information',
+    text: 'This is an example message',
+    mode: 'info',
+    timeout: 0 // No timeout, will stay until cancelled
+  })
+}
+
+function cancelCurrentMessage() {
+  if (messageId !== null) {
+    statusRef.value.cancelMessage(messageId)
+    messageId = null
   }
-})
+}
 </script>
 ```
 
@@ -94,32 +145,6 @@ Adds a new status message to the display.
 #### `updateMessage(id, options)`
 
 Updates an existing message.
-
-```javascript
-// Store the ID when creating a message
-const messageId = statusRef.value.push({
-  title: 'Processing',
-  text: 'Your request is being processed',
-  mode: 'info',
-  timeout: 30000
-})
-
-// Later, update the message
-statusRef.value.updateMessage(messageId, {
-  title: 'Complete',
-  text: 'Your request was processed successfully',
-  mode: 'success',
-  timeout: 5000
-})
-```
-
-#### `cancelMessage(id)`
-
-Manually dismiss a message.
-
-```javascript
-statusRef.value.cancelMessage(messageId)
-```
 
 ## Features
 

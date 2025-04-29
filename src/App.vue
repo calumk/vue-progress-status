@@ -13,10 +13,14 @@
 
       <div class="docs">
         <h2>Usage</h2>
-        <pre><code>import { ProgressStatus } from '@calumk/vue-progress-status'
+        <pre><code>import ProgressStatus from '@calumk/vue-progress-status'
 
-// In your component setup:
-const statusRef = ref()
+// In your component with script setup:
+&lt;script setup&gt;
+import { ref } from 'vue'
+import ProgressStatus from '@calumk/vue-progress-status'
+
+const statusRef = ref(null)
 
 function showNotification() {
   statusRef.value.push({
@@ -27,6 +31,12 @@ function showNotification() {
     cancellable: true  // Can be closed by user
   })
 }
+&lt;/script&gt;
+
+&lt;template&gt;
+  &lt;ProgressStatus ref="statusRef" /&gt;
+  &lt;button @click="showNotification"&gt;Show Notification&lt;/button&gt;
+&lt;/template&gt;
 </code></pre>
       </div>
     </div>
@@ -35,90 +45,73 @@ function showNotification() {
   </div>
 </template>
 
-<script>
-import { defineComponent, ref, onMounted } from 'vue'
+<script setup>
+import { ref, onMounted } from 'vue'
 import ProgressStatus from './components/ProgressStatus.vue'
 
-export default defineComponent({
-  name: 'App',
-  components: {
-    ProgressStatus
-  },
-  setup() {
-    const statusRef = ref(null)
+const statusRef = ref(null)
 
-    function showInfo() {
-      statusRef.value.push({
-        title: 'Information',
-        text: 'This is an informational message',
-        mode: 'info',
-        timeout: 10000,
-        cancellable: true
-      })
-    }
+function showInfo() {
+  statusRef.value.push({
+    title: 'Information',
+    text: 'This is an informational message',
+    mode: 'info',
+    timeout: 10000,
+    cancellable: true
+  })
+}
 
-    function showSuccess() {
-      statusRef.value.push({
-        title: 'Success',
-        text: 'Operation completed successfully',
-        mode: 'success',
-        timeout: 10000,
-        cancellable: true
-      })
-    }
+function showSuccess() {
+  statusRef.value.push({
+    title: 'Success',
+    text: 'Operation completed successfully',
+    mode: 'success',
+    timeout: 10000,
+    cancellable: true
+  })
+}
 
-    function showWarning() {
-      statusRef.value.push({
-        title: 'Warning',
-        text: 'This action may have consequences',
-        mode: 'warning',
-        timeout: 10000,
-        cancellable: true
-      })
-    }
+function showWarning() {
+  statusRef.value.push({
+    title: 'Warning',
+    text: 'This action may have consequences',
+    mode: 'warning',
+    timeout: 10000,
+    cancellable: true
+  })
+}
 
-    function showError() {
-      statusRef.value.push({
-        title: 'Error',
-        text: 'An error has occurred',
-        mode: 'error',
-        timeout: 10000,
-        cancellable: true
-      })
-    }
+function showError() {
+  statusRef.value.push({
+    title: 'Error',
+    text: 'An error has occurred',
+    mode: 'error',
+    timeout: 10000,
+    cancellable: true
+  })
+}
 
-    function showLongMessage() {
-      statusRef.value.push({
-        title: 'Long Message Example',
-        text: 'This is a very long message that will expand when hovered.\nIt contains multiple lines of text to demonstrate the expansion feature.\nEach line will be visible when the message is expanded.\nThe progress bar will stay at the bottom while the text expands upward.',
-        mode: 'info',
-        timeout: 10000,
-        cancellable: true
-      })
-    }
+function showLongMessage() {
+  statusRef.value.push({
+    title: 'Long Message Example',
+    text: 'This is a very long message that will expand when hovered.\nIt contains multiple lines of text to demonstrate the expansion feature.\nEach line will be visible when the message is expanded.\nThe progress bar will stay at the bottom while the text expands upward.',
+    mode: 'info',
+    timeout: 10000,
+    cancellable: true
+  })
+}
 
-    onMounted(() => {
-      // Show a welcome message
-      setTimeout(() => {
-        statusRef.value.push({
-          title: 'Welcome',
-          text: 'Hover over messages to pause and see full text',
-          mode: 'info',
-          timeout: 8000,
-          cancellable: true
-        })
-      }, 500)
+// Show a welcome message
+onMounted(() => {
+  setTimeout(() => {
+    statusRef.value.push({
+      title: 'Welcome',
+      text: 'Hover over messages to pause and see full text',
+      mode: 'info',
+      timeout: 8000,
+      cancellable: true
     })
-
-    return {
-      statusRef,
-      showInfo,
-      showSuccess,
-      showWarning,
-      showError,
-      showLongMessage
-    }
-  }
+  }, 500)
 })
 </script>
 

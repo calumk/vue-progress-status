@@ -44,342 +44,326 @@
   </div>
 </template>
 
-<script>
-import { defineComponent, ref, computed, watch } from 'vue'
+<script setup>
+import { ref, computed } from 'vue'
 
-export default defineComponent({
-  name: 'ProgressStatus',
-  setup() {
-    const messages = ref([])
-    const messageId = ref(0)
-    const hoveredMessageId = ref(null)
+const messages = ref([])
+const messageId = ref(0)
+const hoveredMessageId = ref(null)
 
-    const hasVisibleMessages = computed(() => {
-      return visibleMessages.value.length > 0
-    })
+const hasVisibleMessages = computed(() => {
+  return visibleMessages.value.length > 0
+})
 
-    const visibleMessages = computed(() => {
-      return messages.value.filter(msg => !msg.cancelled)
-    })
+const visibleMessages = computed(() => {
+  return messages.value.filter(msg => !msg.cancelled)
+})
 
-    const allMessages = computed(() => {
-      return messages.value
-    })
+const allMessages = computed(() => {
+  return messages.value
+})
 
-    function isMessageToRightOfHovered(message) {
-      if (!hoveredMessageId.value) return false
-      const hoveredIndex = messages.value.findIndex(msg => msg.id === hoveredMessageId.value)
-      const messageIndex = messages.value.findIndex(msg => msg.id === message.id)
-      return messageIndex > hoveredIndex
-    }
+function isMessageToRightOfHovered(message) {
+  if (!hoveredMessageId.value) return false
+  const hoveredIndex = messages.value.findIndex(msg => msg.id === hoveredMessageId.value)
+  const messageIndex = messages.value.findIndex(msg => msg.id === message.id)
+  return messageIndex > hoveredIndex
+}
 
-    function handleMouseEnter(id) {
-      hoveredMessageId.value = id
-      pauseMessage(id)
-      expandMessage(id)
-    }
+function handleMouseEnter(id) {
+  hoveredMessageId.value = id
+  pauseMessage(id)
+  expandMessage(id)
+}
 
-    function handleMouseLeave(id) {
-      const previouslyHoveredId = hoveredMessageId.value
-      hoveredMessageId.value = null
+function handleMouseLeave(id) {
+  const previouslyHoveredId = hoveredMessageId.value
+  hoveredMessageId.value = null
 
-      // Resume and collapse the specific message
-      if (previouslyHoveredId === id) {
-        resumeMessage(id)
-        collapseMessage(id)
+  // Resume and collapse the specific message
+  if (previouslyHoveredId === id) {
+    resumeMessage(id)
+    collapseMessage(id)
+  }
+  
+  // Clean up any messages that should now be removed
+  setTimeout(() => {
+    const messagesToRemove = []
+    const updatedMessages = messages.value.map(msg => {
+      // Condition 1: Already cancelled
+      if (msg.cancelled) {
+        messagesToRemove.push(msg.id)
+        return msg // Keep it temporarily for filtering later
       }
+      // Condition 2: Timed out (progress <= 0) but was previously protected
+      if (!msg.cancelled && msg.progress <= 0) {
+        console.log(`Cleaning up previously protected message: ${msg.id}`)
+        messagesToRemove.push(msg.id)
+        return { ...msg, cancelled: true } // Mark cancelled before removal
+      }
+      return msg
+    })
+
+    // Update the array once to mark necessary items cancelled
+    messages.value = updatedMessages
+
+    // Filter out the messages marked for removal
+    if (messagesToRemove.length > 0) {
+      messages.value = messages.value.filter(msg => !messagesToRemove.includes(msg.id))
+    }
+  }, 300) // Delay to allow leave animation
+}
+
+function push(options) {
+  const id = messageId.value++
+  const message = {
+    id,
+    title: options.title || '',
+    text: options.text || '',
+    mode: options.mode || 'info',
+    timeout: options.timeout ?? 10000,
+    cancellable: options.cancellable !== false,
+    progress: 100,
+    cancelled: false,
+    startTime: Date.now(),
+    isPaused: false,
+    pauseTime: null,
+    interval: null,
+    isExpanded: false
+  }
+
+  messages.value = [...messages.value, message]
+
+  if (message.timeout > 0) {
+    startProgressUpdate(message)
+  }
+
+  return id
+}
+
+function expandMessage(id) {
+  const message = messages.value.find(msg => msg.id === id)
+  if (message) {
+    const index = messages.value.findIndex(msg => msg.id === id)
+    if (index !== -1) {
+      messages.value = [
+        ...messages.value.slice(0, index),
+        { ...message, isExpanded: true },
+        ...messages.value.slice(index + 1)
+      ]
+    }
+  }
+}
+
+function collapseMessage(id) {
+  const message = messages.value.find(msg => msg.id === id)
+  if (message) {
+    const index = messages.value.findIndex(msg => msg.id === id)
+    if (index !== -1) {
+      messages.value = [
+        ...messages.value.slice(0, index),
+        { ...message, isExpanded: false },
+        ...messages.value.slice(index + 1)
+      ]
+    }
+  }
+}
+
+function startProgressUpdate(message) {
+  console.log('Starting progress update for message:', message.id)
+  if (message.interval) {
+    console.log('Clearing existing interval:', message.interval)
+    clearInterval(message.interval)
+  }
+
+  message.interval = setInterval(() => {
+    if (message.cancelled || message.isPaused) {
+      console.log('Stopping update - cancelled or paused:', { 
+        id: message.id, 
+        cancelled: message.cancelled, 
+        isPaused: message.isPaused 
+      })
+      clearInterval(message.interval)
+      message.interval = null
+      return
+    }
+
+    const elapsed = Date.now() - message.startTime
+    const progress = Math.max(0, 100 - (elapsed / message.timeout * 100))
+    
+    console.log('Progress update:', {
+      id: message.id,
+      elapsed,
+      progress,
+      isPaused: message.isPaused
+    })
+    
+    // Update the message in the array to trigger reactivity
+    const index = messages.value.findIndex(msg => msg.id === message.id)
+    if (index !== -1) {
+      messages.value = [
+        ...messages.value.slice(0, index),
+        { ...messages.value[index], progress },
+        ...messages.value.slice(index + 1)
+      ]
+    }
+    
+    if (progress <= 0) {
+      console.log('Progress reached zero for message:', message.id)
+      clearInterval(message.interval)
+      message.interval = null
+
+      const isToLeftOfHovered = hoveredMessageId.value && !isMessageToRightOfHovered(message)
       
-      // Clean up any messages that should now be removed
-      setTimeout(() => {
-        const messagesToRemove = []
-        const updatedMessages = messages.value.map(msg => {
-          // Condition 1: Already cancelled
-          if (msg.cancelled) {
-            messagesToRemove.push(msg.id)
-            return msg // Keep it temporarily for filtering later
-          }
-          // Condition 2: Timed out (progress <= 0) but was previously protected
-          if (!msg.cancelled && msg.progress <= 0) {
-            console.log(`Cleaning up previously protected message: ${msg.id}`)
-            messagesToRemove.push(msg.id)
-            return { ...msg, cancelled: true } // Mark cancelled before removal
-          }
-          return msg
-        })
-
-        // Update the array once to mark necessary items cancelled
-        messages.value = updatedMessages
-
-        // Filter out the messages marked for removal
-        if (messagesToRemove.length > 0) {
-          messages.value = messages.value.filter(msg => !messagesToRemove.includes(msg.id))
-        }
-      }, 300) // Delay to allow leave animation
-    }
-
-    function push(options) {
-      const id = messageId.value++
-      const message = {
-        id,
-        title: options.title || '',
-        text: options.text || '',
-        mode: options.mode || 'info',
-        timeout: options.timeout ?? 10000,
-        cancellable: options.cancellable !== false,
-        progress: 100,
-        cancelled: false,
-        startTime: Date.now(),
-        isPaused: false,
-        pauseTime: null,
-        interval: null,
-        isExpanded: false
-      }
-
-      messages.value = [...messages.value, message]
-
-      if (message.timeout > 0) {
-        startProgressUpdate(message)
-      }
-
-      return id
-    }
-
-    function expandMessage(id) {
-      const message = messages.value.find(msg => msg.id === id)
-      if (message) {
-        const index = messages.value.findIndex(msg => msg.id === id)
-        if (index !== -1) {
-          messages.value = [
-            ...messages.value.slice(0, index),
-            { ...message, isExpanded: true },
-            ...messages.value.slice(index + 1)
-          ]
-        }
-      }
-    }
-
-    function collapseMessage(id) {
-      const message = messages.value.find(msg => msg.id === id)
-      if (message) {
-        const index = messages.value.findIndex(msg => msg.id === id)
-        if (index !== -1) {
-          messages.value = [
-            ...messages.value.slice(0, index),
-            { ...message, isExpanded: false },
-            ...messages.value.slice(index + 1)
-          ]
-        }
-      }
-    }
-
-    function startProgressUpdate(message) {
-      console.log('Starting progress update for message:', message.id)
-      if (message.interval) {
-        console.log('Clearing existing interval:', message.interval)
-        clearInterval(message.interval)
-      }
-
-      message.interval = setInterval(() => {
-        if (message.cancelled || message.isPaused) {
-          console.log('Stopping update - cancelled or paused:', { 
-            id: message.id, 
-            cancelled: message.cancelled, 
-            isPaused: message.isPaused 
-          })
-          clearInterval(message.interval)
-          message.interval = null
-          return
-        }
-
-        const elapsed = Date.now() - message.startTime
-        const progress = Math.max(0, 100 - (elapsed / message.timeout * 100))
-        
-        console.log('Progress update:', {
-          id: message.id,
-          elapsed,
-          progress,
-          isPaused: message.isPaused
-        })
-        
-        // Update the message in the array to trigger reactivity
+      if (isToLeftOfHovered) {
+        // Just mark as cancelled, don't schedule removal
+        console.log('Message to left of hovered, marking cancelled directly:', message.id)
         const index = messages.value.findIndex(msg => msg.id === message.id)
         if (index !== -1) {
           messages.value = [
             ...messages.value.slice(0, index),
-            { ...messages.value[index], progress },
+            { ...messages.value[index], cancelled: true, progress: 0 }, // Ensure progress is 0
             ...messages.value.slice(index + 1)
           ]
         }
-        
-        if (progress <= 0) {
-          console.log('Progress reached zero for message:', message.id)
-          clearInterval(message.interval)
-          message.interval = null
-
-          const isToLeftOfHovered = hoveredMessageId.value && !isMessageToRightOfHovered(message)
-          
-          if (isToLeftOfHovered) {
-            // Just mark as cancelled, don't schedule removal
-            console.log('Message to left of hovered, marking cancelled directly:', message.id)
-            const index = messages.value.findIndex(msg => msg.id === message.id)
-            if (index !== -1) {
-              messages.value = [
-                ...messages.value.slice(0, index),
-                { ...messages.value[index], cancelled: true, progress: 0 }, // Ensure progress is 0
-                ...messages.value.slice(index + 1)
-              ]
-            }
-          } else {
-            // Not protected by hover, proceed with normal cancellation/removal
-            console.log('Message not to left of hovered, calling cancelMessage:', message.id)
-            cancelMessage(message.id)
-          }
-        }
-      }, 32) // ~30fps for smoother updates
-
-      console.log('Started new interval:', message.interval)
-    }
-
-    function pauseMessage(id) {
-      console.log('Attempting to pause message:', id)
-      const message = messages.value.find(msg => msg.id === id)
-      console.log('Found message to pause:', message)
-      if (message && !message.isPaused && message.timeout > 0) {
-        console.log('Pausing message:', {
-          id: message.id,
-          currentInterval: message.interval,
-          isPaused: message.isPaused
-        })
-        
-        // Cancel the interval
-        if (message.interval) {
-          console.log('Clearing interval:', message.interval)
-          clearInterval(message.interval)
-          message.interval = null
-        }
-        
-        const index = messages.value.findIndex(msg => msg.id === id)
-        if (index !== -1) {
-          messages.value = [
-            ...messages.value.slice(0, index),
-            { ...message, isPaused: true, pauseTime: Date.now() },
-            ...messages.value.slice(index + 1)
-          ]
-          console.log('Message paused successfully:', messages.value[index])
-        }
+      } else {
+        // Not protected by hover, proceed with normal cancellation/removal
+        console.log('Message not to left of hovered, calling cancelMessage:', message.id)
+        cancelMessage(message.id)
       }
     }
+  }, 32) // ~30fps for smoother updates
 
-    function resumeMessage(id) {
-      console.log('Attempting to resume message:', id)
-      const message = messages.value.find(msg => msg.id === id)
-      console.log('Found message to resume:', message)
-      if (message && message.isPaused && message.timeout > 0) {
-        console.log('Resuming message:', {
-          id: message.id,
-          currentInterval: message.interval,
-          isPaused: message.isPaused
-        })
-        
-        const pauseDuration = Date.now() - message.pauseTime
-        const index = messages.value.findIndex(msg => msg.id === id)
-        if (index !== -1) {
-          const updatedMessage = { 
-            ...message, 
-            isPaused: false, 
-            pauseTime: null,
-            startTime: message.startTime + pauseDuration
-          }
-          
-          messages.value = [
-            ...messages.value.slice(0, index),
-            updatedMessage,
-            ...messages.value.slice(index + 1)
-          ]
-          
-          // Restart the progress update
-          startProgressUpdate(updatedMessage)
-          console.log('Message resumed successfully:', messages.value[index])
-        }
-      }
+  console.log('Started new interval:', message.interval)
+}
+
+function pauseMessage(id) {
+  console.log('Attempting to pause message:', id)
+  const message = messages.value.find(msg => msg.id === id)
+  console.log('Found message to pause:', message)
+  if (message && !message.isPaused && message.timeout > 0) {
+    console.log('Pausing message:', {
+      id: message.id,
+      currentInterval: message.interval,
+      isPaused: message.isPaused
+    })
+    
+    // Cancel the interval
+    if (message.interval) {
+      console.log('Clearing interval:', message.interval)
+      clearInterval(message.interval)
+      message.interval = null
     }
-
-    function updateMessage(id, options) {
-      const index = messages.value.findIndex(msg => msg.id === id)
-      if (index !== -1) {
-        const message = messages.value[index]
-        if (message.interval) {
-          clearInterval(message.interval)
-          message.interval = null
-        }
-        
-        const updatedMessage = { 
-          ...message, 
-          ...options,
-          isPaused: false,
-          pauseTime: null
-        }
-        
-        if (options.timeout !== undefined) {
-          updatedMessage.progress = 100
-          updatedMessage.startTime = Date.now()
-          
-          if (options.timeout > 0) {
-            startProgressUpdate(updatedMessage)
-          }
-        }
-
-        messages.value = [
-          ...messages.value.slice(0, index),
-          updatedMessage,
-          ...messages.value.slice(index + 1)
-        ]
-      }
-    }
-
-    function cancelMessage(id) {
-      const index = messages.value.findIndex(msg => msg.id === id)
-      if (index !== -1) {
-        const message = messages.value[index]
-        if (message.interval) {
-          clearInterval(message.interval)
-          message.interval = null
-        }
-        
-        // Update the message to be cancelled
-        messages.value = [
-          ...messages.value.slice(0, index),
-          { ...message, cancelled: true },
-          ...messages.value.slice(index + 1)
-        ]
-
-        // Only remove the message if it's not to the left of a hovered message
-        if (!hoveredMessageId.value || !isMessageToRightOfHovered(message)) {
-          setTimeout(() => {
-            messages.value = messages.value.filter(msg => msg.id !== id)
-          }, 300)
-        }
-      }
-    }
-
-    return {
-      messages,
-      visibleMessages,
-      allMessages,
-      hasVisibleMessages,
-      isMessageToRightOfHovered,
-      handleMouseEnter,
-      handleMouseLeave,
-      push,
-      expandMessage,
-      collapseMessage,
-      startProgressUpdate,
-      pauseMessage,
-      resumeMessage,
-      updateMessage,
-      cancelMessage
+    
+    const index = messages.value.findIndex(msg => msg.id === id)
+    if (index !== -1) {
+      messages.value = [
+        ...messages.value.slice(0, index),
+        { ...message, isPaused: true, pauseTime: Date.now() },
+        ...messages.value.slice(index + 1)
+      ]
+      console.log('Message paused successfully:', messages.value[index])
     }
   }
+}
+
+function resumeMessage(id) {
+  console.log('Attempting to resume message:', id)
+  const message = messages.value.find(msg => msg.id === id)
+  console.log('Found message to resume:', message)
+  if (message && message.isPaused && message.timeout > 0) {
+    console.log('Resuming message:', {
+      id: message.id,
+      currentInterval: message.interval,
+      isPaused: message.isPaused
+    })
+    
+    const pauseDuration = Date.now() - message.pauseTime
+    const index = messages.value.findIndex(msg => msg.id === id)
+    if (index !== -1) {
+      const updatedMessage = { 
+        ...message, 
+        isPaused: false, 
+        pauseTime: null,
+        startTime: message.startTime + pauseDuration
+      }
+      
+      messages.value = [
+        ...messages.value.slice(0, index),
+        updatedMessage,
+        ...messages.value.slice(index + 1)
+      ]
+      
+      // Restart the progress update
+      startProgressUpdate(updatedMessage)
+      console.log('Message resumed successfully:', messages.value[index])
+    }
+  }
+}
+
+function updateMessage(id, options) {
+  const index = messages.value.findIndex(msg => msg.id === id)
+  if (index !== -1) {
+    const message = messages.value[index]
+    if (message.interval) {
+      clearInterval(message.interval)
+      message.interval = null
+    }
+    
+    const updatedMessage = { 
+      ...message, 
+      ...options,
+      isPaused: false,
+      pauseTime: null
+    }
+    
+    if (options.timeout !== undefined) {
+      updatedMessage.progress = 100
+      updatedMessage.startTime = Date.now()
+      
+      if (options.timeout > 0) {
+        startProgressUpdate(updatedMessage)
+      }
+    }
+
+    messages.value = [
+      ...messages.value.slice(0, index),
+      updatedMessage,
+      ...messages.value.slice(index + 1)
+    ]
+  }
+}
+
+function cancelMessage(id) {
+  const index = messages.value.findIndex(msg => msg.id === id)
+  if (index !== -1) {
+    const message = messages.value[index]
+    if (message.interval) {
+      clearInterval(message.interval)
+      message.interval = null
+    }
+    
+    // Update the message to be cancelled
+    messages.value = [
+      ...messages.value.slice(0, index),
+      { ...message, cancelled: true },
+      ...messages.value.slice(index + 1)
+    ]
+
+    // Only remove the message if it's not to the left of a hovered message
+    if (!hoveredMessageId.value || !isMessageToRightOfHovered(message)) {
+      setTimeout(() => {
+        messages.value = messages.value.filter(msg => msg.id !== id)
+      }, 300)
+    }
+  }
+}
+
+// Export methods for the component
+defineExpose({
+  push,
+  updateMessage,
+  cancelMessage
 })
 </script>
 
