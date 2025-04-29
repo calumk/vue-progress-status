@@ -20,12 +20,25 @@ npm install @calumk/vue-progress-status
 
 ## Usage
 
+### Importing
+
+There are two parts to import:
+
+```js
+// Import the component
+import ProgressStatus from '@calumk/vue-progress-status'
+
+// Import the styles (required)
+import '@calumk/vue-progress-status/dist/style.css'
+```
+
 ### Vue 3 Script Setup
 
 ```vue
 <script setup>
 import { ref } from 'vue'
 import ProgressStatus from '@calumk/vue-progress-status'
+import '@calumk/vue-progress-status/dist/style.css' // Import the styles
 
 const statusRef = ref(null)
 
@@ -66,6 +79,7 @@ Updates an existing message.
 <script setup>
 import { ref } from 'vue'
 import ProgressStatus from '@calumk/vue-progress-status'
+import '@calumk/vue-progress-status/dist/style.css'
 
 const statusRef = ref(null)
 let messageId = null
@@ -100,6 +114,7 @@ Manually dismiss a message.
 <script setup>
 import { ref } from 'vue'
 import ProgressStatus from '@calumk/vue-progress-status'
+import '@calumk/vue-progress-status/dist/style.css'
 
 const statusRef = ref(null)
 let messageId = null
@@ -157,15 +172,45 @@ Updates an existing message.
 
 ## Customizing
 
-The component uses CSS variables for easy customization:
+The component uses CSS variables for easy customization. You can override these in your CSS:
 
 ```css
 :root {
+  /* Colors for different status modes */
   --progress-status-info-color: #1890ff;
   --progress-status-success-color: #52c41a;
   --progress-status-warning-color: #faad14;
   --progress-status-error-color: #ff4d4f;
+  
+  /* Background and other styling */
+  --progress-status-background: #f5f5f5;
 }
+```
+
+### Alternative: Importing CSS in specific components
+
+If you prefer not to import the CSS globally, you can import it in your component:
+
+```vue
+<script setup>
+import { ref } from 'vue'
+import ProgressStatus from '@calumk/vue-progress-status'
+import '@calumk/vue-progress-status/dist/style.css' // Import CSS in component
+</script>
+```
+
+### Styling with Scoped CSS
+
+You can also target the component with scoped CSS:
+
+```vue
+<style scoped>
+/* Target specific parts of the component */
+:deep(.status-message) {
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+</style>
 ```
 
 ## License
