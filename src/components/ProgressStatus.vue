@@ -45,11 +45,17 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, getCurrentInstance } from 'vue'
+import { progressStatusService } from '../progressStatusService'
 
 const messages = ref([])
 const messageId = ref(0)
 const hoveredMessageId = ref(null)
+
+// Register this component instance with the service on mount
+onMounted(() => {
+  progressStatusService.setInstance(getCurrentInstance().exposed)
+})
 
 const hasVisibleMessages = computed(() => {
   return visibleMessages.value.length > 0

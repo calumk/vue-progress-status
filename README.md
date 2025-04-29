@@ -216,3 +216,68 @@ You can also target the component with scoped CSS:
 ## License
 
 MIT
+
+## Global Service
+
+You can use the `progressStatusService` to access ProgressStatus from anywhere in your application without passing refs.
+
+### Basic Setup
+
+1. Include ProgressStatus once in your App.vue:
+
+```vue
+<template>
+  <div id="app">
+    <!-- Your app content -->
+    
+    <!-- Include ProgressStatus component once -->
+    <ProgressStatus />
+  </div>
+</template>
+
+<script setup>
+import ProgressStatus from '@calumk/vue-progress-status'
+import '@calumk/vue-progress-status/dist/style.css'
+</script>
+```
+
+2. Import and use the service from any component:
+
+```vue
+<script setup>
+import { progressStatusService } from '@calumk/vue-progress-status'
+
+function showNotification() {
+  progressStatusService.push({
+    title: 'Success',
+    text: 'Operation completed successfully',
+    mode: 'success',
+    timeout: 5000
+  })
+}
+</script>
+```
+
+### Available Service Methods
+
+The service provides the same methods as the component:
+
+```js
+// Show a notification
+const id = progressStatusService.push({
+  title: 'Info',
+  text: 'This is an info message',
+  mode: 'info',
+  timeout: 5000
+})
+
+// Update an existing notification
+progressStatusService.updateMessage(id, {
+  title: 'Updated',
+  text: 'This message has been updated',
+  mode: 'success'
+})
+
+// Dismiss a notification
+progressStatusService.cancelMessage(id)
+```

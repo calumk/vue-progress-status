@@ -10,20 +10,26 @@
         <button @click="showError" class="btn btn-error">Show Error</button>
         <button @click="showLongMessage" class="btn btn-info">Show Long Message</button>
       </div>
+      
+      <div class="example-section">
+        <h2>Using the Service</h2>
+        <p>The following buttons use the progressStatusService from another component:</p>
+        <ServiceExample />
+      </div>
     </div>
     
-    <ProgressStatus ref="statusRef" />
+    <ProgressStatus />
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { onMounted } from 'vue'
 import ProgressStatus from '../src/components/ProgressStatus.vue'
-
-const statusRef = ref(null)
+import { progressStatusService } from '../src/progressStatusService'
+import ServiceExample from './ServiceExample.vue'
 
 function showInfo() {
-  statusRef.value.push({
+  progressStatusService.push({
     title: 'Information',
     text: 'This is an informational message',
     mode: 'info',
@@ -33,7 +39,7 @@ function showInfo() {
 }
 
 function showSuccess() {
-  statusRef.value.push({
+  progressStatusService.push({
     title: 'Success',
     text: 'Operation completed successfully',
     mode: 'success',
@@ -43,7 +49,7 @@ function showSuccess() {
 }
 
 function showWarning() {
-  statusRef.value.push({
+  progressStatusService.push({
     title: 'Warning',
     text: 'This action may have consequences',
     mode: 'warning',
@@ -53,7 +59,7 @@ function showWarning() {
 }
 
 function showError() {
-  statusRef.value.push({
+  progressStatusService.push({
     title: 'Error',
     text: 'An error has occurred',
     mode: 'error',
@@ -63,7 +69,7 @@ function showError() {
 }
 
 function showLongMessage() {
-  statusRef.value.push({
+  progressStatusService.push({
     title: 'Long Message Example',
     text: 'This is a very long message that will expand when hovered.\nIt contains multiple lines of text to demonstrate the expansion feature.\nEach line will be visible when the message is expanded.',
     mode: 'info',
@@ -75,7 +81,7 @@ function showLongMessage() {
 // Show a welcome message on mount
 onMounted(() => {
   setTimeout(() => {
-    statusRef.value.push({
+    progressStatusService.push({
       title: 'Welcome',
       text: 'Hover over messages to pause and see full text',
       mode: 'info',
@@ -105,6 +111,18 @@ onMounted(() => {
 h1 {
   text-align: center;
   margin-bottom: 30px;
+}
+
+h2 {
+  margin-top: 30px;
+  margin-bottom: 15px;
+}
+
+.example-section {
+  margin-top: 40px;
+  padding: 20px;
+  background: #f9f9f9;
+  border-radius: 6px;
 }
 
 .button-group {

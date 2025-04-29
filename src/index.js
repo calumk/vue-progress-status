@@ -1,7 +1,10 @@
 import ProgressStatus from './components/ProgressStatus.vue'
+import { progressStatusService } from './progressStatusService'
 
-// Export as named and default
-export { ProgressStatus }
+// Export as named exports
+export { ProgressStatus, progressStatusService }
+
+// Export component as default
 export default ProgressStatus
 
 // Create an install function for Vue.use()
