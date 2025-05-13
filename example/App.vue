@@ -115,7 +115,7 @@ function showInfo() {
   statusRef.value.push({
     title: 'Information',
     text: 'This is an informational message',
-    mode: 'info',
+    severity: 'info',
     timeout: 10000,
     cancellable: true
   })
@@ -125,7 +125,7 @@ function showSuccess() {
   statusRef.value.push({
     title: 'Success',
     text: 'Operation completed successfully',
-    mode: 'success',
+    severity: 'success',
     timeout: 10000,
     cancellable: true
   })
@@ -135,7 +135,7 @@ function showWarning() {
   statusRef.value.push({
     title: 'Warning',
     text: 'This action may have consequences',
-    mode: 'warning',
+    severity: 'warning',
     timeout: 10000,
     cancellable: true
   })
@@ -145,7 +145,7 @@ function showError() {
   statusRef.value.push({
     title: 'Error',
     text: 'An error has occurred',
-    mode: 'error',
+    severity: 'error',
     timeout: 10000,
     cancellable: true
   })
@@ -155,42 +155,42 @@ function showLongMessage() {
   statusRef.value.push({
     title: 'Long Message Example',
     text: 'This is a very long message that will expand when hovered.\nIt contains multiple lines of text to demonstrate the expansion feature.\nEach line will be visible when the message is expanded.\nThe progress bar will stay at the bottom while the text expands upward.',
-    mode: 'info',
+    severity: 'info',
     timeout: 10000,
     cancellable: true
   })
 }
 
-// Example of using the updateMessage method
+// Example of using the update method
 function showUpdateMessage() {
   let messageId = statusRef.value.push({
     title: 'Processing',
     text: 'Step 1: Starting process...',
-    mode: 'info',
+    severity: 'info',
     timeout: 15000,
     cancellable: true
   })
   
   // Update the message after 2 seconds
   setTimeout(() => {
-    statusRef.value.updateMessage(messageId, {
+    statusRef.value.update(messageId, {
       text: 'Step 2: Processing data...',
     })
   }, 2000)
   
   // Update the message after 4 seconds
   setTimeout(() => {
-    statusRef.value.updateMessage(messageId, {
+    statusRef.value.update(messageId, {
       text: 'Step 3: Finalizing...',
     })
   }, 4000)
   
   // Complete the process after 6 seconds
   setTimeout(() => {
-    statusRef.value.updateMessage(messageId, {
+    statusRef.value.update(messageId, {
       title: 'Complete',
       text: 'Process completed successfully!',
-      mode: 'success',
+      severity: 'success',
       timeout: 5000
     })
   }, 6000)
@@ -202,7 +202,7 @@ onMounted(() => {
     statusRef.value.push({
       title: 'Welcome',
       text: 'Welcome to the @calumk/vue-progress-status demo! Hover over messages to pause and see full content.',
-      mode: 'info',
+      severity: 'info',
       timeout: 8000,
       cancellable: true
     })

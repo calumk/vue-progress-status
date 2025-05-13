@@ -17,45 +17,47 @@ import { progressStatusService } from '../src/progressStatusService'
 // Example of using the progressStatusService from a component
 // that doesn't have direct access to the ProgressStatus component
 function showServiceMessage() {
-  progressStatusService.push({
+  // Using the service methods directly
+  const messageId = progressStatusService.push({
     title: 'Service Message',
     text: 'This message was triggered from a separate component using the progressStatusService!',
-    mode: 'success',
+    severity: 'success',
     timeout: 8000,
     cancellable: true
   })
 }
 
-// Example of using the updateMessage method with the service
+// Example of using the update method with the service
 function showUpdateExample() {
-  const messageId = progressStatusService.push({
+  // Using the message object methods
+  const message = progressStatusService.push({
     title: 'Service Processing',
     text: 'Step 1: Starting process via service...',
-    mode: 'info',
+    severity: 'info',
     timeout: 15000,
     cancellable: true
   })
   
   // Update the message after 2 seconds
   setTimeout(() => {
-    progressStatusService.updateMessage(messageId, {
+    message.update({
       text: 'Step 2: Processing data via service...',
     })
   }, 2000)
   
   // Update the message after 4 seconds
   setTimeout(() => {
-    progressStatusService.updateMessage(messageId, {
+    message.update({
       text: 'Step 3: Finalizing via service...',
     })
   }, 4000)
   
   // Complete the process after 6 seconds
   setTimeout(() => {
-    progressStatusService.updateMessage(messageId, {
+    message.update({
       title: 'Service Complete',
       text: 'Process completed successfully via service!',
-      mode: 'success',
+      severity: 'success',
       timeout: 5000
     })
   }, 6000)

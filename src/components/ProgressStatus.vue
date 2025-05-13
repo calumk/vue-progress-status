@@ -30,14 +30,14 @@
           <div
             v-if="!message.cancelled"
             class="ps-status-message"
-            :class="[`ps-${message.mode}`, { 'ps-is-expanded': message.isExpanded }]"
+            :class="[`ps-${message.severity}`, { 'ps-is-expanded': message.isExpanded }]"
             @mouseenter="handleMouseEnter(message.id)"
             @mouseleave="handleMouseLeave(message.id)"
           >
             <div class="ps-status-content">
               <div class="ps-status-header">
                 <span class="ps-status-title">{{ message.title }}</span>
-                <button v-if="message.cancellable" class="ps-status-close" @click="cancelMessage(message.id)">×</button>
+                <button v-if="message.cancellable" class="ps-status-close" @click="cancel(message.id)">×</button>
               </div>
               <div class="ps-status-text">{{ message.text }}</div>
             </div>
@@ -67,7 +67,7 @@
           <div v-else class="ps-history-list">
             <div v-for="entry in messageHistory" :key="entry.id" class="ps-history-entry">
               <!-- Original notification -->
-              <div class="ps-history-message" :class="`ps-${entry.original.mode}`">
+              <div class="ps-history-message" :class="`ps-${entry.original.severity}`">
                 <div class="ps-history-message-content">
                   <div class="ps-history-message-header">
                     <span class="ps-history-message-title">{{ entry.original.title }}</span>
@@ -79,7 +79,7 @@
               
               <!-- Updates for this notification -->
               <div v-for="(update, index) in entry.updates" :key="`${entry.id}-${index}`" class="ps-history-update">
-                <div class="ps-history-message" :class="`ps-${update.mode}`">
+                <div class="ps-history-message" :class="`ps-${update.severity}`">
                   <div class="ps-history-message-content">
                     <div class="ps-history-message-header">
                       <span class="ps-history-message-title">{{ update.title }}</span>
@@ -197,7 +197,7 @@ function push(options) {
     id,
     title: options.title || '',
     text: options.text || '',
-    mode: options.mode || 'info',
+    severity: options.severity || 'info',
     timeout: options.timeout ?? 10000,
     cancellable: options.cancellable !== false,
     progress: 100,
@@ -217,7 +217,7 @@ function push(options) {
     original: {
       title: message.title,
       text: message.text,
-      mode: message.mode,
+      severity: message.severity,
       timestamp: Date.now()
     },
     updates: []
@@ -318,8 +318,8 @@ function startProgressUpdate(message) {
         }
       } else {
         // Not protected by hover, proceed with normal cancellation/removal
-        log('Message not to left of hovered, calling cancelMessage:', message.id)
-        cancelMessage(message.id)
+        log('Message not to left of hovered, calling cancel:', message.id)
+        cancel(message.id)
       }
     }
   }, 32) // ~30fps for smoother updates
@@ -391,7 +391,7 @@ function resumeMessage(id) {
   }
 }
 
-function updateMessage(id, options) {
+function update(id, options) {
   const index = messages.value.findIndex(msg => msg.id === id)
   if (index !== -1) {
     const message = messages.value[index]
@@ -428,7 +428,7 @@ function updateMessage(id, options) {
       const updateEntry = {
         title: updatedMessage.title,
         text: updatedMessage.text,
-        mode: updatedMessage.mode,
+        severity: updatedMessage.severity,
         timestamp: Date.now()
       }
       messageHistory.value = [
@@ -443,7 +443,7 @@ function updateMessage(id, options) {
   }
 }
 
-function cancelMessage(id) {
+function cancel(id) {
   const index = messages.value.findIndex(msg => msg.id === id)
   if (index !== -1) {
     const message = messages.value[index]
@@ -487,8 +487,8 @@ function formatTime(timestamp) {
 // Export methods for the component
 defineExpose({
   push,
-  updateMessage,
-  cancelMessage
+  update,
+  cancel
 })
 </script>
 

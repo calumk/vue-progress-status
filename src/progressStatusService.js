@@ -1,4 +1,5 @@
 import { ref } from 'vue'
+import { ProgressStatusMessage } from './ProgressStatusMessage'
 
 // Create a reactive reference to store the component instance
 const progressStatusRef = ref(null)
@@ -38,10 +39,12 @@ export const progressStatusService = {
     log('Pushing message:', options)
     const id = progressStatusRef.value.push(options)
     log('Message pushed with id:', id)
-    return id
+    
+    // Return a new ProgressStatusMessage instance
+    return new ProgressStatusMessage(id, this)
   },
   
-  updateMessage(id, options) {
+  update(id, options) {
     if (!progressStatusRef.value) {
       log('Warning: Component not registered')
       console.warn('ProgressStatus component is not registered. Make sure it is mounted in your app.')
@@ -49,10 +52,10 @@ export const progressStatusService = {
     }
     
     log('Updating message:', { id, options })
-    progressStatusRef.value.updateMessage(id, options)
+    progressStatusRef.value.update(id, options)
   },
   
-  cancelMessage(id) {
+  cancel(id) {
     if (!progressStatusRef.value) {
       log('Warning: Component not registered')
       console.warn('ProgressStatus component is not registered. Make sure it is mounted in your app.')
@@ -60,6 +63,6 @@ export const progressStatusService = {
     }
     
     log('Cancelling message:', id)
-    progressStatusRef.value.cancelMessage(id)
+    progressStatusRef.value.cancel(id)
   }
 } 

@@ -54,7 +54,7 @@ function showNotification() {
   statusRef.value.push({
     title: 'Operation Complete',
     text: 'Your task was completed successfully',
-    mode: 'success',   // 'info', 'success', 'warning', 'error'
+    severity: 'success',   // 'info', 'success', 'warning', 'error'
     timeout: 5000,     // Time in ms before auto-dismiss
     cancellable: true  // Can be closed by user
   })
@@ -64,24 +64,56 @@ function showNotification() {
 
 ### Using the Service
 
-You can also use the service to trigger notifications from anywhere in your application:
+You can use the service to trigger notifications from anywhere in your application. There are two ways to use it:
+
+#### Method 1: Using Service Methods Directly
 
 ```vue
-<template>
-  <button @click="showServiceNotification">Show Notification</button>
-</template>
-
 <script setup>
 import { progressStatusService } from '@calumk/vue-progress-status'
 
 function showServiceNotification() {
-  progressStatusService.push({
+  const messageId = progressStatusService.push({
     title: 'Service Notification',
     text: 'This notification was triggered using the service',
-    mode: 'info',
+    severity: 'info',
     timeout: 5000,
     cancellable: true
   })
+
+  // Update the message
+  progressStatusService.update(messageId, {
+    text: 'Updated message text'
+  })
+
+  // Cancel the message
+  progressStatusService.cancel(messageId)
+}
+</script>
+```
+
+#### Method 2: Using Message Object Methods
+
+```vue
+<script setup>
+import { progressStatusService } from '@calumk/vue-progress-status'
+
+function showServiceNotification() {
+  const message = progressStatusService.push({
+    title: 'Service Notification',
+    text: 'This notification was triggered using the service',
+    severity: 'info',
+    timeout: 5000,
+    cancellable: true
+  })
+
+  // Update the message
+  message.update({
+    text: 'Updated message text'
+  })
+
+  // Cancel the message
+  message.cancel()
 }
 </script>
 ```
@@ -112,7 +144,7 @@ import ProgressStatus from '@calumk/vue-progress-status'
 |--------|------|---------|-------------|
 | title | String | '' | Title of the notification |
 | text | String | '' | Message content |
-| mode | String | 'info' | Type of notification ('info', 'success', 'warning', 'error') |
+| severity | String | 'info' | Type of notification ('info', 'success', 'warning', 'error') |
 | timeout | Number | 10000 | Time in ms before auto-dismiss (0 for no timeout) |
 | cancellable | Boolean | true | Whether user can dismiss the notification |
 
@@ -121,8 +153,8 @@ import ProgressStatus from '@calumk/vue-progress-status'
 | Method | Parameters | Return | Description |
 |--------|------------|--------|-------------|
 | push | options | messageId | Add a new notification |
-| updateMessage | (id, options) | void | Update an existing notification |
-| cancelMessage | id | void | Dismiss a notification |
+| update | (id, options) | void | Update an existing notification |
+| cancel | id | void | Dismiss a notification |
 
 ## Development
 
