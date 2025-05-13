@@ -193,10 +193,16 @@ function handleMouseLeave(id) {
 
 function push(options) {
   const id = messageId.value++
+  
+  // Check for deprecated 'text' property
+  if (options.text !== undefined) {
+    console.warn('[vue-progress-status] The "text" property is deprecated. Please use "message" instead.')
+  }
+  
   const message = {
     id,
     title: options.title || '',
-    text: options.text || '',
+    text: options.message || options.text || '', // Support both message and text
     severity: options.severity || 'info',
     timeout: options.timeout ?? 10000,
     cancellable: options.cancellable !== false,
@@ -400,9 +406,15 @@ function update(id, options) {
       message.interval = null
     }
     
+    // Check for deprecated 'text' property
+    if (options.text !== undefined) {
+      console.warn('[vue-progress-status] The "text" property is deprecated. Please use "message" instead.')
+    }
+    
     const updatedMessage = { 
       ...message, 
       ...options,
+      text: options.message || options.text || message.text, // Support both message and text
       isPaused: false,
       pauseTime: null
     }

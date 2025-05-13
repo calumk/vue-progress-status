@@ -38,28 +38,61 @@ bun install @calumk/vue-progress-status
 
 ### Basic Usage
 
-```vue
-<template>
-  <ProgressStatus ref="statusRef" />
-  <button @click="showNotification">Show Notification</button>
-</template>
+```javascript
+// Show a notification
+const id = progressStatus.push({
+  title: 'Processing',
+  message: 'Starting the operation...', // Preferred over 'text'
+  severity: 'info',
+  timeout: 5000
+})
 
-<script setup>
-import { ref } from 'vue'
-import ProgressStatus from '@calumk/vue-progress-status'
+// Update the notification
+progressStatus.update(id, {
+  title: 'Processing',
+  message: 'Operation in progress...',
+  severity: 'success'
+})
 
-const statusRef = ref(null)
+// Cancel the notification
+progressStatus.cancel(id)
+```
 
-function showNotification() {
-  statusRef.value.push({
-    title: 'Operation Complete',
-    text: 'Your task was completed successfully',
-    severity: 'success',   // 'info', 'success', 'warning', 'error'
-    timeout: 5000,     // Time in ms before auto-dismiss
-    cancellable: true  // Can be closed by user
-  })
+### Available Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `title` | string | '' | The title of the notification |
+| `message` | string | '' | The message content (preferred) |
+| `text` | string | '' | The message content (deprecated, use `message` instead) |
+| `severity` | 'info' \| 'success' \| 'warning' \| 'error' | 'info' | The severity level of the notification |
+| `timeout` | number | 10000 | Duration in milliseconds before auto-dismiss (0 for no auto-dismiss) |
+| `cancellable` | boolean | true | Whether the notification can be manually dismissed |
+
+### Methods
+
+| Method | Parameters | Return | Description |
+|--------|------------|--------|-------------|
+| `push` | `options: MessageOptions` | `number` | Shows a new notification and returns its ID |
+| `update` | `id: number, options: MessageOptions` | `void` | Updates an existing notification |
+| `cancel` | `id: number` | `void` | Cancels a specific notification |
+| `cancelAll` | - | `void` | Cancels all active notifications |
+| `getMessages` | - | `Message[]` | Returns all active notifications |
+| `getMessageHistory` | - | `MessageHistoryEntry[]` | Returns the history of all notifications |
+| `clearHistory` | - | `void` | Clears the notification history |
+
+### MessageOptions Interface
+
+```typescript
+interface MessageOptions {
+  title?: string;
+  /** @deprecated Use message instead */
+  text?: string;
+  message?: string;
+  severity?: 'info' | 'success' | 'warning' | 'error';
+  timeout?: number;
+  cancellable?: boolean;
 }
-</script>
 ```
 
 ### Using the Service

@@ -62,6 +62,45 @@ function showUpdateExample() {
     })
   }, 6000)
 }
+
+function showNotification() {
+  const id = progressStatusService.push({
+    title: 'Operation Started',
+    message: 'Your task has begun',
+    severity: 'info',
+    timeout: 5000,
+    cancellable: true
+  })
+
+  // Update after 2 seconds
+  setTimeout(() => {
+    progressStatusService.update(id, {
+      title: 'Operation Complete',
+      message: 'Your task was completed successfully',
+      severity: 'success'
+    })
+  }, 2000)
+}
+
+function showWarning() {
+  progressStatusService.push({
+    title: 'Warning',
+    message: 'This is a warning message',
+    severity: 'warning',
+    timeout: 0,
+    cancellable: true
+  })
+}
+
+function showError() {
+  progressStatusService.push({
+    title: 'Error',
+    message: 'An error occurred',
+    severity: 'error',
+    timeout: 0,
+    cancellable: true
+  })
+}
 </script>
 
 <style scoped>
