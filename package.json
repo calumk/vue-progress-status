@@ -1,6 +1,6 @@
 {
   "name": "@calumk/vue-progress-status",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "A customizable status notification system for Vue 3 with a progress bar and hover functionality",
   "author": {
     "name": "Calum Knott",

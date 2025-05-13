@@ -14,21 +14,45 @@ const log = (message, data) => {
   }
 }
 
+/**
+ * @typedef {'info' | 'success' | 'warning' | 'error'} Severity
+ */
+
+/**
+ * @typedef {Object} MessageOptions
+ * @property {string} [title]
+ * @property {string} [message]
+ * @property {string} [text] - Deprecated, use message instead
+ * @property {Severity} [severity]
+ * @property {number} [timeout]
+ * @property {boolean} [cancellable]
+ */
+
 // Service methods
 export const progressStatusService = {
-  // Enable or disable debug mode
+  /**
+   * Enable or disable debug mode
+   * @param {boolean} enabled
+   */
   setDebug(enabled) {
     debugMode = !!enabled
     log('Debug mode set to:', enabled)
   },
 
-  // Set the component instance (called by the component itself)
+  /**
+   * Set the component instance (called by the component itself)
+   * @param {any} instance
+   */
   setInstance(instance) {
     progressStatusRef.value = instance
     log('Component instance registered')
   },
   
-  // Methods that match the component's API
+  /**
+   * Show a new notification.
+   * @param {MessageOptions} options
+   * @returns {ProgressStatusMessage|number} ProgressStatusMessage instance or -1 if not registered
+   */
   push(options) {
     if (!progressStatusRef.value) {
       log('Warning: Component not registered')
@@ -44,6 +68,11 @@ export const progressStatusService = {
     return new ProgressStatusMessage(id, this)
   },
   
+  /**
+   * Update an existing notification.
+   * @param {number} id
+   * @param {MessageOptions} options
+   */
   update(id, options) {
     if (!progressStatusRef.value) {
       log('Warning: Component not registered')
@@ -55,6 +84,10 @@ export const progressStatusService = {
     progressStatusRef.value.update(id, options)
   },
   
+  /**
+   * Cancel a notification by ID.
+   * @param {number} id
+   */
   cancel(id) {
     if (!progressStatusRef.value) {
       log('Warning: Component not registered')
